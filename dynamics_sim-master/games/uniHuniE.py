@@ -2,16 +2,19 @@ from games.game import Game, SymmetricNPlayerGame
 from math import pow
 from games.payoff_matrices.uniHuniE import generatePayoffs
 
-n = 7  # Number of distinct values
+import numpy
+
+n = 8  # Number of distinct values
 m = n + 1
-stratOptions = ['Punish iff S > ' + str(value) + '/' + str(n) for value in range(0, m)]
-stratOptions2 = ['Punish iff S > ' + str(value) + '/' + str(n+2) for value in range(0, m+2)]
+stratOptions3 = ['Punish iff S > ' + str(value) + '/' + str(n) for value in range(0, m)]
+stratOptions = ['Punish iff S > ' + str(value) for value in range(0, m+2)]
+#stratOptions2 = ['Punish iff S > ' + str(value) + '/' + str(n+2) for value in range(0, m+2)]
 
 class UniHuniE(SymmetricNPlayerGame):
     DEFAULT_PARAMS = dict(a=4, b=0, c=2, d=4, errorRange=1/5)
     PLAYER_LABELS = ['']
     #STRATEGY_LABELS = (["Always Punish"] + stratOptions + ["Never Punish"])
-    STRATEGY_LABELS = (stratOptions2)
+    STRATEGY_LABELS = (stratOptions)
     EQUILIBRIA_LABELS = ('Always punish', 'Never Punish', 'Coordinate on punishment')
 
     def __init__(self, a, b, c, d, errorRange, equilibrium_tolerance=0.2):
@@ -45,6 +48,7 @@ class UniHuniE(SymmetricNPlayerGame):
         payoff_matrix_p1[0][m+1], payoff_matrix_p2[0][m+1] = b, c  # P1 always punishes, P2 never punishes
 
         payoff_matrix = payoff_matrix_p1
+
         super(UniHuniE, self).__init__(payoff_matrix=payoff_matrix, n=2, equilibrium_tolerance=equilibrium_tolerance)
 
     @classmethod

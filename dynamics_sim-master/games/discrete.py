@@ -1,12 +1,12 @@
 from games.game import Game, SymmetricNPlayerGame
 from games.payoff_matrices.discrete import generatePayoffs
 
-n = 8  # Number of distinct values
+n = 8  # Number of distinct values 98
 m = n + 1
 stratOptions = ['Punish iff S > ' + str(value) for value in range(0, m+2)]
 
 class Discrete(SymmetricNPlayerGame):
-    DEFAULT_PARAMS = dict(a=4, b=0, c=2, d=4, errorRange=1)
+    DEFAULT_PARAMS = dict(a=4, b=0, c=3, d=4, errorRange=1.1)
     PLAYER_LABELS = ['']
     STRATEGY_LABELS = (stratOptions)
     EQUILIBRIA_LABELS = ('Always punish', 'Never Punish', 'Coordinate on punishment')
@@ -16,8 +16,8 @@ class Discrete(SymmetricNPlayerGame):
 
         values = (a, b, c, d, errorRange, n+2)  # For easier entry
 
-        for i in range(m+2): # My threshold is i
-            for j in range(m+2): # Your threhsold is j
+        for i in range(m+2):  # My threshold is i
+            for j in range(m+2):  # Your threshold is j
                 payoff_matrix[i][j] = generatePayoffs(i, j, values)
 
         super(Discrete, self).__init__(payoff_matrix=payoff_matrix, n=2, equilibrium_tolerance=equilibrium_tolerance)

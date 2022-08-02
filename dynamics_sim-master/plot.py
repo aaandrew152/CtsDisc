@@ -19,11 +19,24 @@ for idx, shade in enumerate(redBlueShades):
         blendShade = tuple([blendShade[tupIdx] / 2 for tupIdx in range(3)])
         expandRBShades.append(blendShade)
 
+superExpandRBShades = []
+for idx, shade in enumerate(redBlueShades):
+    superExpandRBShades.append(shade)
+
+    if idx != len(redBlueShades) - 1:
+        blendShade = tuple([redBlueShades[idx + 1][tupIdx] - shade[tupIdx] for tupIdx in range(3)])
+        stepShade = tuple([blendShade[tupIdx] / 11 for tupIdx in range(3)])
+        newShade = shade
+
+        for i in range(10):
+            newShade = tuple([newShade[tupIdx] + stepShade[tupIdx] for tupIdx in range(3)])
+            superExpandRBShades.append(newShade)
 
 class GraphOptions:
     COLORS_KEY = 'colors'
     RED_TO_BLUE_COLORS_KEY = 'Red to Blue gradient'
     EXPAND_RB_COLORS_KEY = 'Red to Blue gradient expanded'
+    SUPER_EXPAND_RB_COLORS_KEY = 'Red to Blue with 100 colors'
     EXTRA_COLORS = 'extra colors if more than 7 to be shown'
     Y_LABEL_KEY = 'y_label'
     LEGEND_LOCATION_KEY = 'legend_location'
@@ -37,6 +50,7 @@ class GraphOptions:
     default = {COLORS_KEY: ['Cyan', 'Blue', 'Green', 'Yellow', 'Red', 'Magenta', 'Black', 'BlueViolet', 'Crimson', 'Indigo'] * 5,  # If extra colors needed it repeats
                RED_TO_BLUE_COLORS_KEY: [(value[0]/255, value[1]/255, value[2]/255) for value in redBlueShades],
                EXPAND_RB_COLORS_KEY: [(value[0]/255, value[1]/255, value[2]/255) for value in expandRBShades],
+               SUPER_EXPAND_RB_COLORS_KEY: [(value[0] / 255, value[1] / 255, value[2] / 255) for value in superExpandRBShades],
                MARKERS_KEY: "o.v8sh+xD|_ ",
                NO_MARKERS_KEY: False,
                Y_LABEL_KEY: "Proportion of Population",
@@ -47,7 +61,8 @@ class GraphOptions:
                PLAYER_TYPES: False}
 
 
-def plot_data_for_players(data, x_range, x_label, num_strats, num_players=None, graph_options=None, title="Proportion of Population", yBot=None):
+def plot_data_for_players(data, x_range, x_label, num_strats, num_players=None, graph_options=None,
+                          title="Proportion of Population", yBot=None, mslPos=None):
     # data is a list of n = (the number of player types) of 2D arrays
     # 1st dimension indices are the index into the x_range array
     # 2nd dimension indices are the index of the strategy number
@@ -69,7 +84,8 @@ def plot_data_for_players(data, x_range, x_label, num_strats, num_players=None, 
         old_options.update(graph_options)
     graph_options = old_options
 
-    plot_data(data, x_label, x_range, title, graph_options[GraphOptions.TITLE_KEY], num_strats, graph_options=graph_options, yBot=yBot)
+    plot_data(data, x_label, x_range, title, graph_options[GraphOptions.TITLE_KEY], num_strats,
+              graph_options=graph_options, yBot=yBot, mslPos=mslPos)
 
 
 def plot_single_data_set(data, x_label, x_values, y_label, title, num_categories, graph_options=None):
@@ -84,8 +100,8 @@ def _append_options(options):
         old_options.update(options)
     return old_options
 
-    
-def plot_data(data, x_label, x_values, y_label, title_i, num_categories, graph_options=None, yBot=None):
+#TODO rewrite so that mslPos doesn't need to be carried around separately
+def plot_data(data, x_label, x_values, y_label, title_i, num_categories, graph_options=None, yBot=None, mslPos=None):
     """
     support for multiple 2d arrays, each as an entry in the data array
     All data should be normalized before being passed in
@@ -122,6 +138,8 @@ def plot_data(data, x_label, x_values, y_label, title_i, num_categories, graph_o
             colors = graph_options[GraphOptions.RED_TO_BLUE_COLORS_KEY]
         elif color == 'expandrb':
             colors = graph_options[GraphOptions.EXPAND_RB_COLORS_KEY]
+        elif color == 'superexpandrb':
+            colors = graph_options[GraphOptions.SUPER_EXPAND_RB_COLORS_KEY]
         else:
             print('Please enter a valid color!')
             colors = graph_options[GraphOptions.COLORS_KEY]
@@ -155,9 +173,14 @@ def plot_data(data, x_label, x_values, y_label, title_i, num_categories, graph_o
                 plt.ylim([yBot, 1.01])
 
             plt.xlim([x_values[0], x_values[-1]])
-            plt.ylabel(y_label)
-            plt.xlabel(x_label)
-            plt.grid(graph_options[GraphOptions.SHOW_GRID_KEY])
+            if not 'no_axis' in graph_options:
+                plt.ylabel(y_label)
+                plt.xlabel(x_label)
+            #plt.grid()graph_options[GraphOptions.SHOW_GRID_KEY])
+
+            if 'no_axis' in graph_options:
+                plt.gca().axes.xaxis.set_ticklabels([])
+                plt.gca().axes.yaxis.set_ticklabels([])
 
             # iterate over all the categories
             for cat_i in range(n_cats):
@@ -171,18 +194,19 @@ def plot_data(data, x_label, x_values, y_label, title_i, num_categories, graph_o
                         plt.fill_between(x_values, data_i[:, cat_i], 0, color=colors[cat_i % n_cats])
                     else:
                         plt.fill_between(x_values, data_i[:, cat_i], data_i[:, cat_i-1], color=colors[cat_i % n_cats])
-                
+
                 plt.plot(x_values, data_i[:, cat_i], c=colors[cat_i % n_cats], lw=2, marker=marker)
                 
             labels = [category_labels(i, j) for j in range(n_cats)]
-            plt.legend(labels, loc=graph_options[GraphOptions.LEGEND_LOCATION_KEY])
+            if not 'no_legend' in graph_options:
+                plt.legend(labels, loc=graph_options[GraphOptions.LEGEND_LOCATION_KEY])
 
             if 'lineArray' in graph_options:
                 graphLines(graph_options['lineArray'], plt)
             if 'meanStratLine' in graph_options:
                 for genNumber, gen in enumerate(rawData):
                     avgColor = colorAvg(colors, gen)
-                    line = [genNumber, genNumber + 1, yBot + 0.025, yBot + 0.025]
+                    line = [genNumber, genNumber + 1, mslPos, mslPos]
                     graph_options['colorLineArray'][i].append([line, avgColor])
             if 'colorLineArray' in graph_options:
                 graphColoredLines(graph_options['colorLineArray'][i], plt, colors)

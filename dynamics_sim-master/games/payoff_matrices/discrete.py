@@ -1,5 +1,6 @@
 import math
 
+
 def generatePayoffs(myThreshold, yourThreshold, values):
     a, b, c, d, e, n = values
 
@@ -15,7 +16,7 @@ def generatePayoffs(myThreshold, yourThreshold, values):
     return myPayoff
 
 
-def signalsPossible(harm, error, n): # Don't allow harm error to be <1 and > n
+def signalsPossible(harm, error, n):  # Don't allow harm error to be <1 and > n
     integerError = int(math.floor(error))
 
     signals = []
@@ -33,6 +34,7 @@ def signalsPossible(harm, error, n): # Don't allow harm error to be <1 and > n
             signals.append(i)
 
     return signals
+
 
 def propPunish(mySignals, yourSignals, myThresh, yourThresh):
     AA = 0

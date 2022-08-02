@@ -1,5 +1,6 @@
 from matplotlib import colors
 
+
 def graphLines(lineArray, plt):
     for line in lineArray:
         plt.plot([line[0], line[1]], [line[2], line[3]], 'k-', lw=1)
@@ -35,6 +36,7 @@ def normalize(value_range, normalizeTo=1):  # Normalizes data to 1, useful for t
     for i, step in enumerate(value_range):
         value_range[i] = step / (step + normalizeTo)
     return value_range
+
 
 def plotText(textList, plt):
     for position, text in textList:

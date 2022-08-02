@@ -83,7 +83,7 @@ class DynamicsSimulator(object):
 
             assert isinstance(p, np.ndarray)
             assert p.sum() == expected
-            assert len(p) == n_strats
+            assert len(p) == n_strats, "State var has " + str(len(p)) + " strats, while there are " + str(n_strats) + " strats"
 
         return s, fitness
 

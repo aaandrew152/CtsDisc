@@ -47,7 +47,7 @@ class Game(object):
         self.pm = PayoffMatrix(len(player_frequencies), payoff_matrices)
         if self.STRATEGY_LABELS is not None:
             for labels_i, num_strats  in zip(self.STRATEGY_LABELS, self.pm.num_strats):
-                assert len(labels_i) == num_strats
+                assert len(labels_i) == num_strats, "num labels is " + str(len(labels_i)) + "num strats is " + str(num_strats)
 
         self.player_frequencies = player_frequencies
         self.equilibrium_tolerance = equilibrium_tolerance

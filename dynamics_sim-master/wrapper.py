@@ -155,6 +155,7 @@ class GameDynamicsWrapper(object):
                                 player_frequencies=game.player_frequencies,
                                 **self.dynamics_kwargs)
         frequencies = numpy.zeros(self.game_cls.num_equilibria())
+
         output = par_for(parallelize)(delayed(wrapper_simulate)(self, num_gens=num_gens, burn=burn, start_state=start_state, class_end=class_end) for iteration in range(num_iterations))
 
         equilibria = []

@@ -1,5 +1,6 @@
 from plot import plot_data_for_players, GraphOptions
 
+
 def setupGraph(graph, game, dyn, burn, num_gens, results, payoffs):  # TODO allow ordering of various lines
     if graph is True:
         graph = dict()
@@ -8,7 +9,6 @@ def setupGraph(graph, game, dyn, burn, num_gens, results, payoffs):  # TODO allo
         order = 1
         for key in graph_options['options']:
             graph_options[key] = True
-
 
     yPos = 0
 
@@ -22,6 +22,33 @@ def setupGraph(graph, game, dyn, burn, num_gens, results, payoffs):  # TODO allo
         yPos = 0
         graph_options['colorLineArray'] = [[] for player in results]
         graph_options['textList'] = []
+
+    if 'modeStratLine' in graph_options:
+        yPos -= 0.05
+        for playerIdx, player in enumerate(results):
+            colorLineArray = []
+            for gen in range(burn, num_gens):
+                maxStratProp = 0
+                maxStratIdx = -1
+                for stratIdx, stratProp in enumerate(player[gen]):
+                    if stratProp > maxStratProp:
+                        maxStratProp = stratProp
+                        maxStratIdx = stratIdx
+
+                currentGen = gen - burn
+                nextGen = gen - burn + 1
+                line = [currentGen, nextGen, yPos, yPos]
+                colorLineArray.append([line, maxStratIdx])
+            graph_options['colorLineArray'][playerIdx].extend(colorLineArray)
+            if not 'no_text' in graph_options:
+                graph_options['textList'].append(([-num_gens / 10, yPos], 'Modal strategy'))
+
+    meanStratLinePos = None
+    if 'meanStratLine' in graph_options:  # This makes space for it to be added in the plot function
+        yPos -= 0.05
+        meanStratLinePos = yPos
+        if not 'no_text' in graph_options:
+            graph_options['textList'].append(([-num_gens / 10, yPos], 'Average strategy'))
 
     if 'payoffLine' in graph_options:
         yPos -= 0.05
@@ -42,30 +69,8 @@ def setupGraph(graph, game, dyn, burn, num_gens, results, payoffs):  # TODO allo
                 colorLineArray.append([line, maxPayoffIdx])
             # colorLineArray[0][1] = colorLineArray[1][1]  # To fill in first gen
             graph_options['colorLineArray'][playerIdx].extend(colorLineArray)
-            graph_options['textList'].append(([-num_gens / 10, yPos], 'Greatest payoff'))  # TODO fix x positioning
-
-    if 'modeStratLine' in graph_options:
-        yPos -= 0.05
-        for playerIdx, player in enumerate(results):
-            colorLineArray = []
-            for gen in range(burn, num_gens):
-                maxStratProp = 0
-                maxStratIdx = -1
-                for stratIdx, stratProp in enumerate(player[gen]):
-                    if stratProp > maxStratProp:
-                        maxStratProp = stratProp
-                        maxStratIdx = stratIdx
-
-                currentGen = gen - burn
-                nextGen = gen - burn + 1
-                line = [currentGen, nextGen, yPos, yPos]
-                colorLineArray.append([line, maxStratIdx])
-            graph_options['colorLineArray'][playerIdx].extend(colorLineArray)
-            graph_options['textList'].append(([-num_gens / 10, yPos], 'Modal strategy'))
-
-    if 'meanStratLine' in graph_options:
-        yPos -= 0.05
-        graph_options['textList'].append(([-num_gens / 10, yPos], 'Average strategy'))
+            if not 'no_text' in graph_options:
+                graph_options['textList'].append(([-num_gens / 10, yPos], 'Greatest payoff'))  # TODO fix x positioning
 
     yPos -= 0.025
 
@@ -73,7 +78,7 @@ def setupGraph(graph, game, dyn, burn, num_gens, results, payoffs):  # TODO allo
 
     plot_data_for_players(results, range(burn, num_gens), "Generation #", dyn.pm.num_strats,
                           num_players=dyn.num_players,
-                          graph_options=graph_options, yBot=yPos)
+                          graph_options=graph_options, yBot=yPos, mslPos=meanStratLinePos)
 
     if 'graph_payoffs' in graph_options:
         if burn == 0:
